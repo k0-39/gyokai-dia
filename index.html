@@ -62,10 +62,11 @@ aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px}
 .tag{display:inline-block;color:#FFFFFF;padding:2px 8px;font-size:12px;font-weight:700}
 .new{background:var(--new);color:var(--new-ink);padding:2px 7px;font-size:11px;font-weight:800;letter-spacing:.08em;border-radius:2px}
 .upd{display:inline-flex;align-items:center;gap:8px}
-.reload{display:inline-flex;align-items:center;gap:4px;min-height:28px;padding:0 10px;border:1px solid currentColor;border-radius:999px;background:transparent;color:var(--bar-ink);font:700 12px var(--body);cursor:pointer;opacity:.9}
-.reload:hover{opacity:1}
+.reload-wrap{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.reload{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:0 20px;border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font:700 15px var(--body);cursor:pointer;box-shadow:0 2px 0 rgba(0,0,0,.15)}
+.reload:hover{filter:brightness(1.1)}
 .reload[disabled]{opacity:.5;cursor:default}
-.reload svg{width:13px;height:13px}
+.reload svg{width:17px;height:17px}
 .reload .spin{animation:spin .9s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion: reduce){.reload .spin{animation:none}}
@@ -89,12 +90,12 @@ aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px}
 .note{font-size:12px;color:var(--muted)}
 footer{background:var(--bar);color:var(--bar-ink);font-size:13px}
 footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding-block:22px}
-@media (max-width:560px){.status{text-align:left;max-width:none}.seg{width:100%}.seg button{flex:1;min-width:0}}
+@media (max-width:560px){.reload-wrap{align-items:flex-start}.status{text-align:left;max-width:none}.seg{width:100%}.seg button{flex:1;min-width:0}}
 </style>
 </head>
 <body>
 <div class="topbar"><div class="wrap">
-  <span class="upd"><span id="updated">最終更新:—</span><button id="reloadBtn" class="reload" type="button" aria-label="ニュースを読み込み直す"><svg id="reloadIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>更新</span></button></span>
+  <span class="upd"><span id="updated">最終更新:—</span></span>
   <span>15分ごとに自動更新 ・ 見出しは各配信元へリンクします</span>
 </div></div>
 
@@ -104,7 +105,10 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
       <span class="eyebrow">貸切バス・旅行業界のニュースをひとまとめに</span>
       <h1 class="logo"><span class="en">BUS<i>TA</i></span><span class="ja">バスタ</span></h1>
     </div>
-    <span id="status" class="status" role="status" aria-live="polite"></span>
+    <div class="reload-wrap">
+      <button id="reloadBtn" class="reload" type="button"><svg id="reloadIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>最新に更新</span></button>
+      <span id="status" class="status" role="status" aria-live="polite"></span>
+    </div>
   </div>
   <div class="seg" role="group" aria-label="地域">
     <button type="button" data-region="national" aria-pressed="true">全国</button>
