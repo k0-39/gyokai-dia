@@ -1,4 +1,4 @@
-// 業界ダイヤ — collects RSS headlines and writes news.json (run by GitHub Actions)
+// BUSTA(バスタ) — collects RSS headlines and writes news.json (run by GitHub Actions)
 import { readFile, writeFile } from "node:fs/promises";
 const OUT = new URL("../news.json", import.meta.url);
 
@@ -99,7 +99,7 @@ async function fetchSource(src) {
   const timer = setTimeout(() => ctrl.abort(), 8000);
   try {
     const res = await fetch(src.url, {
-      headers: { "User-Agent": "GyokaiDiaNewsBot/1.0 (+headline aggregator)", Accept: "application/rss+xml, application/xml, text/xml, */*" },
+      headers: { "User-Agent": "BustaNewsBot/1.0 (+headline aggregator)", Accept: "application/rss+xml, application/xml, text/xml, */*" },
       signal: ctrl.signal, redirect: "follow",
     });
     if (!res.ok) throw new Error("HTTP " + res.status);

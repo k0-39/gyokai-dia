@@ -3,11 +3,11 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>業界ダイヤ</title>
-<meta name="description" content="貸切バス・旅行業界のニュースを全国と鹿児島県に分けてひとまとめに。15分ごとに自動更新。">
+<title>BUSTA バスタ</title>
+<meta name="description" content="BUSTA(バスタ)— 貸切バス・旅行業界のニュースを全国と鹿児島県に分けてひとまとめに。15分ごとに自動更新。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Noto+Serif+JP:wght@600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,800&family=BIZ+UDPGothic:wght@400;700&family=Noto+Serif+JP:wght@600;800&display=swap">
 <style>
 /* Layout: newspaper masthead + region switch, main column of headlines, side rail of operational info */
 :root{
@@ -37,7 +37,10 @@ header.mast{background:var(--paper);border-bottom:3px solid var(--accent)}
 header.mast .wrap{display:flex;flex-direction:column;gap:18px;padding-block:24px 0}
 .mast-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
 .eyebrow{font-size:13px;letter-spacing:.1em;color:var(--accent);font-weight:700}
-.logo{font-family:var(--display);font-weight:800;font-size:clamp(34px,6vw,44px);line-height:1.1;margin:0}
+.logo{margin:0;display:flex;align-items:baseline;gap:12px;line-height:1}
+.logo .en{font-family:"Archivo","Arial Black",sans-serif;font-weight:800;font-stretch:112%;font-size:clamp(40px,7vw,56px);letter-spacing:.02em;color:var(--ink)}
+.logo .en i{font-style:normal;color:var(--accent)}
+.logo .ja{font-family:var(--body);font-weight:700;font-size:14px;letter-spacing:.3em;color:var(--muted)}
 .refresh{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
 .btn{min-height:48px;padding:0 22px;border:0;border-radius:4px;background:var(--accent);color:var(--accent-ink);font:700 16px var(--body);cursor:pointer;display:inline-flex;align-items:center;gap:10px}
 .btn[disabled]{opacity:.65;cursor:default}
@@ -90,7 +93,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
   <div class="mast-row">
     <div style="display:flex;flex-direction:column;gap:4px">
       <span class="eyebrow">貸切バス・旅行業界のニュースをひとまとめに</span>
-      <h1 class="logo">業界ダイヤ</h1>
+      <h1 class="logo"><span class="en">BUS<i>TA</i></span><span class="ja">バスタ</span></h1>
     </div>
     <div class="refresh">
       <button id="refreshBtn" class="btn" type="button">
@@ -130,7 +133,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 </main>
 
 <footer><div class="wrap">
-  <span>業界ダイヤ(仮称)― 貸切バス・旅行業界ニュース</span>
+  <span>BUSTA(バスタ)― 貸切バス・旅行業界ニュース</span>
   <span>見出しの著作権は各配信元に帰属します</span>
 </div></footer>
 
