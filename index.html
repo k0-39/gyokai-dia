@@ -19,7 +19,7 @@
 /* Layout: newspaper masthead + region switch, main column of headlines, side rail of operational info */
 :root{
   --bg:#F3F4F1; --paper:#FFFFFF; --ink:#16191D; --muted:#4A4F57; --rule:#DCDDD8;
-  --accent:#0E5A47; --accent-ink:#FFFFFF; --alert:#B4410C; --bar:#16191D; --bar-ink:#E9EAE6;
+  --accent:#0E5A47; --accent-ink:#FFFFFF; --new:#F2B705; --new-ink:#16191D; --alert:#B4410C; --bar:#16191D; --bar-ink:#E9EAE6;
   --c-bus:#0E5A47; --c-road:#7A5212; --c-gov:#B4410C; --c-travel:#5B3E8C; --c-inb:#1F4E8C; --c-stat:#4A4F57;
   --display:"Noto Serif JP","Hiragino Mincho ProN","Yu Mincho",serif;
   --body:"BIZ UDPGothic","Hiragino Sans","Yu Gothic",sans-serif;
@@ -60,6 +60,7 @@ main.wrap{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;padding-bl
 .col{flex:1 1 600px;min-width:0;display:flex;flex-direction:column;gap:28px}
 aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px}
 .tag{display:inline-block;color:#FFFFFF;padding:2px 8px;font-size:12px;font-weight:700}
+.new{background:var(--new);color:var(--new-ink);padding:2px 7px;font-size:11px;font-weight:800;letter-spacing:.08em;border-radius:2px}
 .chk{border:1px solid var(--alert);color:var(--alert);padding:1px 7px;font-size:12px;font-weight:700}
 .lead{background:var(--paper);border:1px solid var(--rule);padding:26px;display:flex;flex-direction:column;gap:12px}
 .lead h2{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(22px,3.4vw,30px);line-height:1.45;text-wrap:balance}
@@ -142,6 +143,8 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
   function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=String(text); return e; }
   function link(text, url){ if(!/^https?:\/\//.test(url||"")) return el("span",null,text); var a=el("a",null,text); a.href=url; a.target="_blank"; a.rel="noopener"; return a; }
   function tag(cat){ var t=el("span","tag",cat); t.style.background="var("+(CAT_COLOR[cat]||"--c-stat")+")"; return t; }
+  var NEW_WINDOW_MS = 3*60*60*1000;
+  function isNew(n){ if(!n.firstSeen) return false; var t=new Date(n.firstSeen).getTime(); return !isNaN(t) && Date.now()-t < NEW_WINDOW_MS; }
   function fmtDate(iso){ if(!iso) return ""; var d=new Date(iso); if(isNaN(d)) return "";
     return d.toLocaleString("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"numeric",day:"numeric"}); }
   function fmtTime(iso){ if(!iso) return "—"; var d=new Date(iso); if(isNaN(d)) return "—";
@@ -166,7 +169,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     var lead=$("lead");
     if (L) {
       lead.textContent="";
-      var m=el("div","meta"); m.appendChild(tag(L.cat)); if(L.important) m.appendChild(el("span","chk","要チェック")); m.appendChild(el("span",null,name+"のトップニュース")); lead.appendChild(m);
+      var m=el("div","meta"); m.appendChild(tag(L.cat)); if(isNew(L)) m.appendChild(el("span","new","NEW")); if(L.important) m.appendChild(el("span","chk","要チェック")); m.appendChild(el("span",null,name+"のトップニュース")); lead.appendChild(m);
       var h=el("h2"); h.appendChild(link(L.title,L.link)); lead.appendChild(h);
       var m2=el("div","meta"); m2.appendChild(el("span",null,"出典:"+L.source)); if(L.date) m2.appendChild(el("span",null,fmtDate(L.date))); lead.appendChild(m2);
       lead.hidden=false;
@@ -180,6 +183,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     else if (!shown.length) list.appendChild(el("p","empty","このカテゴリの新着はまだありません。"));
     rest.forEach(function(n){
       var a=el("article","item"); var m=el("div","meta"); m.appendChild(tag(n.cat));
+      if(isNew(n)) m.appendChild(el("span","new","NEW"));
       if(n.important) m.appendChild(el("span","chk","要チェック"));
       if(n.date) m.appendChild(el("span",null,fmtDate(n.date)));
       m.appendChild(el("span",null,n.source)); a.appendChild(m);

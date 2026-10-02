@@ -142,19 +142,29 @@ async function collectAll() {
   }
 
   const now = Date.now();
+  const nowIso = new Date(now).toISOString();
+  // Remember when each headline was first collected, so the page can mark fresh arrivals as NEW.
+  // Items from before this feature existed count as old.
+  const firstSeen = new Map();
+  if (prev) {
+    for (const r of Object.values(prev.regions || {})) {
+      for (const n of r.items || []) firstSeen.set(n.link, n.firstSeen || "2000-01-01T00:00:00.000Z");
+    }
+  }
   const regions = {};
   for (const region of ["national", "kagoshima"]) {
     const seen = new Set();
     const items = byRegion[region]
       .filter((n) => (seen.has(n.link) ? false : (seen.add(n.link), true)))
-      .sort(byDateDesc).slice(0, 50);
+      .sort(byDateDesc).slice(0, 50)
+      .map((n) => Object.assign({}, n, { firstSeen: firstSeen.get(n.link) || (prev ? nowIso : "2000-01-01T00:00:00.000Z") }));
     const alerts = region === "kagoshima"
       ? items.filter((n) => (n.alert || (n.cat === "交通・道路" && n.important)) &&
           (!n.date || now - new Date(n.date).getTime() < ALERT_WINDOW_MS)).slice(0, 6)
       : [];
     regions[region] = { items, alerts };
   }
-  const data = { updatedAt: new Date().toISOString(), regions, sources };
+  const data = { updatedAt: nowIso, regions, sources };
   await writeFile(OUT, JSON.stringify(data));
   return data;
 }
