@@ -48,14 +48,6 @@ header.mast .wrap{display:flex;flex-direction:column;gap:18px;padding-block:24px
 .logo .en{font-family:"Archivo","Arial Black",sans-serif;font-weight:800;font-stretch:112%;font-size:clamp(40px,7vw,56px);letter-spacing:.02em;color:var(--ink)}
 .logo .en i{font-style:normal;color:var(--accent)}
 .logo .ja{font-family:var(--body);font-weight:700;font-size:14px;letter-spacing:.3em;color:var(--muted)}
-.refresh{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
-.btn{min-height:48px;padding:0 22px;border:0;border-radius:4px;background:var(--accent);color:var(--accent-ink);font:700 16px var(--body);cursor:pointer;display:inline-flex;align-items:center;gap:10px}
-.btn[disabled]{opacity:.65;cursor:default}
-.collect-link{font-size:13px;font-weight:700;color:var(--accent);text-decoration:underline;text-underline-offset:3px;min-height:32px;display:inline-flex;align-items:center}
-.btn svg{width:18px;height:18px}
-.spin{animation:spin .9s linear infinite}
-@keyframes spin{to{transform:rotate(360deg)}}
-@media (prefers-reduced-motion: reduce){.spin{animation:none}}
 .status{font-size:13px;color:var(--muted);text-align:right;max-width:360px}
 .status.err{color:var(--alert)}
 .seg{display:flex;border:2px solid var(--ink);align-self:flex-start}
@@ -88,7 +80,7 @@ aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px}
 .note{font-size:12px;color:var(--muted)}
 footer{background:var(--bar);color:var(--bar-ink);font-size:13px}
 footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding-block:22px}
-@media (max-width:560px){.refresh{align-items:stretch;width:100%}.btn{justify-content:center}.status{text-align:left;max-width:none}.seg{width:100%}.seg button{flex:1;min-width:0}}
+@media (max-width:560px){.status{text-align:left;max-width:none}.seg{width:100%}.seg button{flex:1;min-width:0}}
 </style>
 </head>
 <body>
@@ -103,14 +95,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
       <span class="eyebrow">貸切バス・旅行業界のニュースをひとまとめに</span>
       <h1 class="logo"><span class="en">BUS<i>TA</i></span><span class="ja">バスタ</span></h1>
     </div>
-    <div class="refresh">
-      <button id="refreshBtn" class="btn" type="button">
-        <svg id="refreshIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
-        <span id="refreshLabel">最新の状態を表示</span>
-      </button>
-      <a id="collectLink" class="collect-link" href="https://github.com/k0-39/gyokai-dia/actions/workflows/collect.yml" target="_blank" rel="noopener">管理者:今すぐニュースを集め直す</a>
-      <span id="status" class="status" role="status" aria-live="polite">ニュースは15分ごとに自動で集めています</span>
-    </div>
+    <span id="status" class="status" role="status" aria-live="polite"></span>
   </div>
   <div class="seg" role="group" aria-label="地域">
     <button type="button" data-region="national" aria-pressed="true">全国</button>
@@ -214,7 +199,6 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     });
   }
 
-  function setBusy(b){ $("refreshBtn").disabled=b; $("refreshLabel").textContent=b?"読み込み中…":"最新の状態を表示"; $("refreshIcon").classList.toggle("spin",b); }
   function showStatus(t,err){ var s=$("status"); s.textContent=t; s.classList.toggle("err",!!err); }
 
   async function load(){
@@ -226,36 +210,9 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     } catch(e) { showStatus(res && res.status===404 ? "まだニュースがありません。最初の自動取得(最長15分)をお待ちください。" : "ニュースを読み込めませんでした。時間をおいてページを開き直してください。", true); return false; }
   }
 
-  async function refresh(){
-    setBusy(true); showStatus("読み込んでいます…");
-    var ok = await load();
-    setBusy(false);
-    if (ok && state.data) showStatus(fmtTime(state.data.updatedAt)+" に集めた最新の状態です(15分ごとに自動更新)", false);
-  }
-
   document.querySelectorAll(".seg button").forEach(function(b){
     b.onclick=function(){ state.region=b.dataset.region; state.filter="all"; try{localStorage.setItem("region",state.region);}catch(e){} render(); };
   });
-  // After the admin starts a collection on GitHub, watch news.json until a newer version is published.
-  var watchTimer=null;
-  function watchForUpdate(){
-    var before = state.data ? state.data.updatedAt : "";
-    var started = Date.now();
-    if (watchTimer) clearInterval(watchTimer);
-    showStatus("GitHubで「Run workflow」を押してください。新しいニュースが届きしだい自動で切り替わります(2〜3分)");
-    watchTimer = setInterval(async function(){
-      await load();
-      if (state.data && state.data.updatedAt !== before) {
-        clearInterval(watchTimer); watchTimer=null;
-        showStatus(fmtTime(state.data.updatedAt)+" に集めたニュースに更新しました", false);
-      } else if (Date.now()-started > 10*60*1000) {
-        clearInterval(watchTimer); watchTimer=null;
-        showStatus("10分待っても新しいニュースが届きませんでした。GitHubで実行されたか確認してください。", true);
-      }
-    }, 20000);
-  }
-  $("collectLink").addEventListener("click", watchForUpdate);
-  $("refreshBtn").onclick=refresh;
   render(); load();
   setInterval(load, 5*60*1000);
 })();
