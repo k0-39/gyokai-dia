@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>業界ダイヤ</title>
+<meta name="description" content="貸切バス・旅行業界のニュースを全国と鹿児島県に分けてひとまとめに。15分ごとに自動更新。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Noto+Serif+JP:wght@600;800&display=swap">
+<style>
+/* Layout: newspaper masthead + region switch, main column of headlines, side rail of operational info */
+:root{
+  --bg:#F3F4F1; --paper:#FFFFFF; --ink:#16191D; --muted:#4A4F57; --rule:#DCDDD8;
+  --accent:#0E5A47; --accent-ink:#FFFFFF; --alert:#B4410C; --bar:#16191D; --bar-ink:#E9EAE6;
+  --c-bus:#0E5A47; --c-road:#7A5212; --c-gov:#B4410C; --c-travel:#5B3E8C; --c-inb:#1F4E8C; --c-stat:#4A4F57;
+  --display:"Noto Serif JP","Hiragino Mincho ProN","Yu Mincho",serif;
+  --body:"BIZ UDPGothic","Hiragino Sans","Yu Gothic",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#121417; --paper:#1B1E22; --ink:#ECEDEA; --muted:#A9ADB3; --rule:#2E3238;
+  --accent:#4FB596; --accent-ink:#0B1F19; --alert:#F08A55; --bar:#0B0C0E; --bar-ink:#C9CBC6;
+  --c-bus:#1D7A62; --c-road:#8E6A22; --c-gov:#B4501C; --c-travel:#6E529E; --c-inb:#2F65AD; --c-stat:#5A606A;
+  color-scheme:dark}}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.7}
+[hidden]{display:none!important}
+a{color:inherit;text-decoration:none}
+a:hover{color:var(--accent);text-decoration:underline}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.wrap{max-width:1200px;margin:0 auto;padding-inline:20px}
+.topbar{background:var(--bar);color:var(--bar-ink);font-size:13px}
+.topbar .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:6px 16px;padding-block:8px}
+header.mast{background:var(--paper);border-bottom:3px solid var(--accent)}
+header.mast .wrap{display:flex;flex-direction:column;gap:18px;padding-block:24px 0}
+.mast-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
+.eyebrow{font-size:13px;letter-spacing:.1em;color:var(--accent);font-weight:700}
+.logo{font-family:var(--display);font-weight:800;font-size:clamp(34px,6vw,44px);line-height:1.1;margin:0}
+.refresh{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.btn{min-height:48px;padding:0 22px;border:0;border-radius:4px;background:var(--accent);color:var(--accent-ink);font:700 16px var(--body);cursor:pointer;display:inline-flex;align-items:center;gap:10px}
+.btn[disabled]{opacity:.65;cursor:default}
+.btn svg{width:18px;height:18px}
+.spin{animation:spin .9s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.spin{animation:none}}
+.status{font-size:13px;color:var(--muted);text-align:right;max-width:360px}
+.status.err{color:var(--alert)}
+.seg{display:flex;border:2px solid var(--ink);align-self:flex-start}
+.seg button{min-height:46px;min-width:130px;padding:0 20px;border:0;background:var(--paper);color:var(--ink);font:700 16px var(--body);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+nav.tabs{display:flex;flex-wrap:wrap;gap:2px}
+nav.tabs button{min-height:44px;padding:0 14px;border:0;border-bottom:4px solid transparent;background:transparent;color:var(--muted);font:700 15px var(--body);cursor:pointer}
+nav.tabs button[aria-pressed="true"]{color:var(--accent);border-bottom-color:var(--accent)}
+main.wrap{display:flex;flex-wrap:wrap;gap:32px;align-items:flex-start;padding-block:28px 64px}
+.col{flex:1 1 600px;min-width:0;display:flex;flex-direction:column;gap:28px}
+aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px}
+.tag{display:inline-block;color:#FFFFFF;padding:2px 8px;font-size:12px;font-weight:700}
+.chk{border:1px solid var(--alert);color:var(--alert);padding:1px 7px;font-size:12px;font-weight:700}
+.lead{background:var(--paper);border:1px solid var(--rule);padding:26px;display:flex;flex-direction:column;gap:12px}
+.lead h2{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(22px,3.4vw,30px);line-height:1.45;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);align-items:center}
+.list-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:8px;gap:12px}
+.list-head h2{margin:0;font-family:var(--display);font-size:20px;font-weight:800}
+.item{padding:14px 0;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:6px}
+.item h3{margin:0;font-size:17px;font-weight:700;line-height:1.6;text-wrap:pretty}
+.empty{padding:28px 0;color:var(--muted);font-size:14px}
+.box{background:var(--paper);border:1px solid var(--rule);padding:20px;display:flex;flex-direction:column;gap:12px}
+.box h2{margin:0;font-family:var(--display);font-size:18px;font-weight:800}
+.box.alerts{border:2px solid var(--alert)}
+.box.alerts h2{color:var(--alert)}
+.alert-row{font-size:14px;line-height:1.7}
+.src-row{display:flex;justify-content:space-between;gap:10px;font-size:13px}
+.src-row .n{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.src-row .n.err{color:var(--alert)}
+.note{font-size:12px;color:var(--muted)}
+footer{background:var(--bar);color:var(--bar-ink);font-size:13px}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;padding-block:22px}
+@media (max-width:560px){.refresh{align-items:stretch;width:100%}.btn{justify-content:center}.status{text-align:left;max-width:none}.seg{width:100%}.seg button{flex:1;min-width:0}}
+</style>
+</head>
+<body>
+<div class="topbar"><div class="wrap">
+  <span id="updated">最終更新:—</span>
+  <span>15分ごとに自動更新 ・ 見出しは各配信元へリンクします</span>
+</div></div>
+
+<header class="mast"><div class="wrap">
+  <div class="mast-row">
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <span class="eyebrow">貸切バス・旅行業界のニュースをひとまとめに</span>
+      <h1 class="logo">業界ダイヤ</h1>
+    </div>
+    <div class="refresh">
+      <button id="refreshBtn" class="btn" type="button">
+        <svg id="refreshIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg>
+        <span id="refreshLabel">最新の状態を表示</span>
+      </button>
+      <span id="status" class="status" role="status" aria-live="polite">ニュースは15分ごとに自動で集めています</span>
+    </div>
+  </div>
+  <div class="seg" role="group" aria-label="地域">
+    <button type="button" data-region="national" aria-pressed="true">全国</button>
+    <button type="button" data-region="kagoshima" aria-pressed="false">鹿児島県</button>
+  </div>
+  <nav class="tabs" id="tabs" aria-label="カテゴリ"></nav>
+</div></header>
+
+<main class="wrap">
+  <div class="col">
+    <article class="lead" id="lead" hidden></article>
+    <section>
+      <div class="list-head"><h2 id="listTitle">全国の最新ニュース</h2><span id="count" class="note"></span></div>
+      <div id="list"><p class="empty">ニュースを読み込んでいます…</p></div>
+    </section>
+  </div>
+  <aside>
+    <section class="box alerts" id="alerts" hidden>
+      <h2>道路・運行・緊急情報</h2>
+      <div id="alertList" style="display:flex;flex-direction:column;gap:8px"></div>
+      <span class="note">直近3日間の通行止め・運休・緊急のお知らせを優先して表示します。</span>
+    </section>
+    <section class="box">
+      <h2>集めている情報源</h2>
+      <div id="sources" style="display:flex;flex-direction:column;gap:6px"></div>
+      <span class="note">各配信元のRSS(新着情報の配信)から見出しとリンクを取得しています。</span>
+    </section>
+  </aside>
+</main>
+
+<footer><div class="wrap">
+  <span>業界ダイヤ(仮称)― 貸切バス・旅行業界ニュース</span>
+  <span>見出しの著作権は各配信元に帰属します</span>
+</div></footer>
+
+<script>
+(function(){
+  var CAT_COLOR = {"貸切バス":"--c-bus","交通・道路":"--c-road","行政・制度":"--c-gov","旅行・観光":"--c-travel","インバウンド":"--c-inb","統計":"--c-stat"};
+  var CAT_ORDER = ["貸切バス","交通・道路","行政・制度","旅行・観光","インバウンド","統計"];
+  var state = { region:"national", filter:"all", data:null };
+  try { var saved = localStorage.getItem("region"); if (saved==="kagoshima"||saved==="national") state.region = saved; } catch(e){}
+
+  function $(id){ return document.getElementById(id); }
+  function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=String(text); return e; }
+  function link(text, url){ if(!/^https?:\/\//.test(url||"")) return el("span",null,text); var a=el("a",null,text); a.href=url; a.target="_blank"; a.rel="noopener"; return a; }
+  function tag(cat){ var t=el("span","tag",cat); t.style.background="var("+(CAT_COLOR[cat]||"--c-stat")+")"; return t; }
+  function fmtDate(iso){ if(!iso) return ""; var d=new Date(iso); if(isNaN(d)) return "";
+    return d.toLocaleString("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"numeric",day:"numeric"}); }
+  function fmtTime(iso){ if(!iso) return "—"; var d=new Date(iso); if(isNaN(d)) return "—";
+    return d.toLocaleString("ja-JP",{timeZone:"Asia/Tokyo",month:"numeric",day:"numeric",weekday:"short",hour:"2-digit",minute:"2-digit"}); }
+  function ago(iso){ var m=Math.round((Date.now()-new Date(iso))/60000); if(m<1) return "たった今"; if(m<60) return m+"分前"; return Math.floor(m/60)+"時間前"; }
+
+  function render(){
+    var r=state.region, name = r==="national"?"全国":"鹿児島県";
+    document.querySelectorAll(".seg button").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.region===r)); });
+    var d=state.data, reg = d && d.regions ? d.regions[r] : null;
+    $("updated").textContent = "最終更新:" + (d ? fmtTime(d.updatedAt)+"("+ago(d.updatedAt)+")" : "—");
+    var items = reg ? reg.items : [];
+
+    var tabs=$("tabs"); tabs.textContent="";
+    var cats=["all"].concat(CAT_ORDER.filter(function(c){ return items.some(function(n){ return n.cat===c; }); }));
+    if (cats.indexOf(state.filter)<0) state.filter="all";
+    cats.forEach(function(c){ var b=el("button",null,c==="all"?"すべて":c); b.type="button"; b.setAttribute("aria-pressed",String(c===state.filter));
+      b.onclick=function(){ state.filter=c; render(); }; tabs.appendChild(b); });
+
+    var shown = items.filter(function(n){ return state.filter==="all" || n.cat===state.filter; });
+    var L = shown.filter(function(n){ return n.important; })[0] || shown[0];
+    var lead=$("lead");
+    if (L) {
+      lead.textContent="";
+      var m=el("div","meta"); m.appendChild(tag(L.cat)); if(L.important) m.appendChild(el("span","chk","要チェック")); m.appendChild(el("span",null,name+"のトップニュース")); lead.appendChild(m);
+      var h=el("h2"); h.appendChild(link(L.title,L.link)); lead.appendChild(h);
+      var m2=el("div","meta"); m2.appendChild(el("span",null,"出典:"+L.source)); if(L.date) m2.appendChild(el("span",null,fmtDate(L.date))); lead.appendChild(m2);
+      lead.hidden=false;
+    } else lead.hidden=true;
+
+    $("listTitle").textContent = state.filter==="all" ? name+"の最新ニュース" : name+" ・ "+state.filter;
+    var rest = shown.filter(function(n){ return n!==L; });
+    $("count").textContent = shown.length ? shown.length+"件・新しい順" : "";
+    var list=$("list"); list.textContent="";
+    if (!d) list.appendChild(el("p","empty","ニュースを読み込んでいます…"));
+    else if (!shown.length) list.appendChild(el("p","empty","このカテゴリの新着はまだありません。"));
+    rest.forEach(function(n){
+      var a=el("article","item"); var m=el("div","meta"); m.appendChild(tag(n.cat));
+      if(n.important) m.appendChild(el("span","chk","要チェック"));
+      if(n.date) m.appendChild(el("span",null,fmtDate(n.date)));
+      m.appendChild(el("span",null,n.source)); a.appendChild(m);
+      var h=el("h3"); h.appendChild(link(n.title,n.link)); a.appendChild(h); list.appendChild(a);
+    });
+
+    var al = reg ? reg.alerts : [];
+    var alist=$("alertList"); alist.textContent="";
+    al.forEach(function(x){ var dv=el("div","alert-row"); dv.appendChild(link(x.title,x.link)); dv.appendChild(el("div","note",x.source+(x.date?" ・ "+fmtDate(x.date):""))); alist.appendChild(dv); });
+    $("alerts").hidden = !al.length;
+
+    var sl=$("sources"); sl.textContent="";
+    (d ? d.sources : []).filter(function(s){ return s.region===r; }).forEach(function(s){
+      var row=el("div","src-row"); row.appendChild(link(s.name,s.home));
+      row.appendChild(el("span","n"+(s.ok?"":" err"), s.ok ? s.count+"件" : "取得できず"));
+      sl.appendChild(row);
+    });
+  }
+
+  function setBusy(b){ $("refreshBtn").disabled=b; $("refreshLabel").textContent=b?"読み込み中…":"最新の状態を表示"; $("refreshIcon").classList.toggle("spin",b); }
+  function showStatus(t,err){ var s=$("status"); s.textContent=t; s.classList.toggle("err",!!err); }
+
+  async function load(){
+    var res;
+    try {
+      res = await fetch("news.json?t="+Date.now(),{cache:"no-store"});
+      if (!res.ok) throw new Error(res.status);
+      state.data = await res.json(); render(); return true;
+    } catch(e) { showStatus(res && res.status===404 ? "まだニュースがありません。最初の自動取得(最長15分)をお待ちください。" : "ニュースを読み込めませんでした。時間をおいてページを開き直してください。", true); return false; }
+  }
+
+  async function refresh(){
+    setBusy(true); showStatus("読み込んでいます…");
+    var ok = await load();
+    setBusy(false);
+    if (ok && state.data) showStatus(fmtTime(state.data.updatedAt)+" に集めた最新の状態です(15分ごとに自動更新)", false);
+  }
+
+  document.querySelectorAll(".seg button").forEach(function(b){
+    b.onclick=function(){ state.region=b.dataset.region; state.filter="all"; try{localStorage.setItem("region",state.region);}catch(e){} render(); };
+  });
+  $("refreshBtn").onclick=refresh;
+  render(); load();
+  setInterval(load, 5*60*1000);
+})();
+</script>
+</body>
+</html>
