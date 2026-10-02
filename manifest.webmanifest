@@ -1,0 +1,15 @@
+{
+  "name": "BUSTA バスタ",
+  "short_name": "BUSTA",
+  "description": "貸切バス・旅行業界のニュースを全国と鹿児島県に分けてひとまとめに",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#F3F4F1",
+  "theme_color": "#0E5A47",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
