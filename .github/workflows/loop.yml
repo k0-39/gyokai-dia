@@ -1,0 +1,56 @@
+name: ニュースを集める(15分ごと・自動予約)
+
+# 取得が終わるたびに、次の 0分・15分・30分・45分 の回をこのワークフロー自身が予約します。
+# GitHub のスケジュール機能が動かない場合でも、途切れずに更新を続けるための仕組みです。
+# 止めたいときは Actions 画面でこのワークフローを「Disable workflow」にしてください。
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: collect-loop
+  cancel-in-progress: false
+
+jobs:
+  collect:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: 次の 0/15/30/45 分まで待つ
+        run: |
+          now=$(date -u +%s)
+          next=$(( (now / 900 + 1) * 900 ))
+          wait=$(( next - now ))
+          echo "待ち時間: ${wait} 秒(取得予定 $(TZ=Asia/Tokyo date -d @${next} '+%H:%M'))"
+          sleep "$wait"
+
+      - name: RSSから見出しを集めて保存
+        run: |
+          git config user.name "gyokai-dia-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for attempt in 1 2 3; do
+            git fetch -q origin main
+            git reset -q --hard origin/main
+            node scripts/collect.mjs
+            git add news.json
+            if git diff --cached --quiet; then echo "変更なし"; break; fi
+            git commit -q -m "ニュース更新 $(TZ=Asia/Tokyo date '+%Y-%m-%d %H:%M')"
+            if git push -q origin HEAD:main; then echo "保存しました"; break; fi
+            echo "保存が競合したため取り直します(${attempt}回目)"
+            sleep 5
+          done
+
+      - name: 次の回を予約
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run loop.yml --ref main --repo "${{ github.repository }}"
