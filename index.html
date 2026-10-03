@@ -81,6 +81,11 @@ aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px}
 .item.read h3,.lead.read h2{color:var(--muted);font-weight:400}
 .item.read .meta,.lead.read .meta{opacity:.6}
 .read-mark{font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--rule);padding:1px 6px}
+.col.swipe-l{animation:swipeL .22s ease-out}
+.col.swipe-r{animation:swipeR .22s ease-out}
+@keyframes swipeL{from{opacity:.3;transform:translateX(28px)}to{opacity:1;transform:none}}
+@keyframes swipeR{from{opacity:.3;transform:translateX(-28px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.col.swipe-l,.col.swipe-r{animation:none}}
 .list-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
 .mini{min-height:32px;padding:0 12px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);color:var(--ink);font:700 12px var(--body);cursor:pointer}
 .mini[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
@@ -197,6 +202,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     var tabs=$("tabs"); tabs.textContent="";
     var cats=["all"].concat(CAT_ORDER.filter(function(c){ return items.some(function(n){ return n.cat===c; }); }));
     if (cats.indexOf(state.filter)<0) state.filter="all";
+    state.cats = cats;
     cats.forEach(function(c){ var b=el("button",null,c==="all"?"すべて":c); b.type="button"; b.setAttribute("aria-pressed",String(c===state.filter));
       b.onclick=function(){ state.filter=c; render(); }; tabs.appendChild(b); });
 
@@ -272,6 +278,26 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
       .forEach(function(n){ if(!readMap[n.link]) readMap[n.link]=Date.now(); });
     saveRead(); render();
   };
+  // Swipe left/right on the news area to move between category tabs.
+  (function(){
+    var area=document.querySelector("main"), sx=0, sy=0, st=0, track=false;
+    area.addEventListener("touchstart", function(e){
+      if (e.touches.length!==1) { track=false; return; }
+      var t=e.touches[0]; sx=t.clientX; sy=t.clientY; st=Date.now(); track=true;
+    }, {passive:true});
+    area.addEventListener("touchend", function(e){
+      if (!track) return; track=false;
+      var t=e.changedTouches[0], dx=t.clientX-sx, dy=t.clientY-sy;
+      if (Date.now()-st>700 || Math.abs(dx)<60 || Math.abs(dx)<Math.abs(dy)*1.5) return;
+      var cats=state.cats||["all"], i=cats.indexOf(state.filter), j=i+(dx<0?1:-1);
+      if (j<0||j>=cats.length) return;
+      state.filter=cats[j]; render();
+      var col=document.querySelector(".col"); col.classList.remove("swipe-l","swipe-r"); void col.offsetWidth; col.classList.add(dx<0?"swipe-l":"swipe-r");
+      var on=document.querySelector("#tabs button[aria-pressed=\"true\"]"); if(on&&on.scrollIntoView) on.scrollIntoView({block:"nearest",inline:"center"});
+      var tabs=document.getElementById("tabs"), top=tabs.getBoundingClientRect().top;
+      if (top<0) window.scrollBy({top:top-8});
+    }, {passive:true});
+  })();
   render(); load();
   setInterval(load, 5*60*1000);
 })();
