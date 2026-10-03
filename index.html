@@ -155,8 +155,10 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
   function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=String(text); return e; }
   function link(text, url){ if(!/^https?:\/\//.test(url||"")) return el("span",null,text); var a=el("a",null,text); a.href=url; a.target="_blank"; a.rel="noopener"; return a; }
   function tag(cat){ var t=el("span","tag",cat); t.style.background="var("+(CAT_COLOR[cat]||"--c-stat")+")"; return t; }
-  var NEW_WINDOW_MS = 3*60*60*1000;
-  function isNew(n){ if(!n.firstSeen) return false; var t=new Date(n.firstSeen).getTime(); return !isNaN(t) && Date.now()-t < NEW_WINDOW_MS; }
+  // NEW = published within the last 24 hours, or picked up by the collector within the last 3 hours.
+  var NEW_PUBLISHED_MS = 24*60*60*1000, NEW_SEEN_MS = 3*60*60*1000;
+  function within(iso, ms){ if(!iso) return false; var t=new Date(iso).getTime(); return !isNaN(t) && Date.now()-t < ms; }
+  function isNew(n){ return within(n.date, NEW_PUBLISHED_MS) || within(n.firstSeen, NEW_SEEN_MS); }
   function fmtDate(iso){ if(!iso) return ""; var d=new Date(iso); if(isNaN(d)) return "";
     return d.toLocaleString("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"numeric",day:"numeric"}); }
   function fmtTime(iso){ if(!iso) return "—"; var d=new Date(iso); if(isNaN(d)) return "—";
