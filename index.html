@@ -78,6 +78,13 @@ aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px}
 .list-head h2{margin:0;font-family:var(--display);font-size:20px;font-weight:800}
 .item{padding:14px 0;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:6px}
 .item h3{margin:0;font-size:17px;font-weight:700;line-height:1.6;text-wrap:pretty}
+.item.read h3,.lead.read h2{color:var(--muted);font-weight:400}
+.item.read .meta,.lead.read .meta{opacity:.6}
+.read-mark{font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--rule);padding:1px 6px}
+.list-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.mini{min-height:32px;padding:0 12px;border:1px solid var(--rule);border-radius:999px;background:var(--paper);color:var(--ink);font:700 12px var(--body);cursor:pointer}
+.mini[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.unread-badge{display:inline-block;min-width:22px;margin-left:8px;padding:0 6px;border-radius:999px;background:var(--new);color:var(--new-ink);font-size:12px;line-height:20px;font-variant-numeric:tabular-nums}
 .empty{padding:28px 0;color:var(--muted);font-size:14px}
 .box{background:var(--paper);border:1px solid var(--rule);padding:20px;display:flex;flex-direction:column;gap:12px}
 .box h2{margin:0;font-family:var(--display);font-size:18px;font-weight:800}
@@ -121,7 +128,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
   <div class="col">
     <article class="lead" id="lead" hidden></article>
     <section>
-      <div class="list-head"><h2 id="listTitle">全国の最新ニュース</h2><span id="count" class="note"></span></div>
+      <div class="list-head"><h2 id="listTitle">全国の最新ニュース</h2><div class="list-tools"><span id="count" class="note"></span><button id="unreadOnly" class="mini" type="button" aria-pressed="false">未読のみ</button><button id="markAll" class="mini" type="button">すべて既読にする</button></div></div>
       <div id="list"><p class="empty">ニュースを読み込んでいます…</p></div>
     </section>
   </div>
@@ -148,12 +155,21 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 (function(){
   var CAT_COLOR = {"貸切バス":"--c-bus","交通・道路":"--c-road","行政・制度":"--c-gov","旅行・観光":"--c-travel","インバウンド":"--c-inb","統計":"--c-stat"};
   var CAT_ORDER = ["貸切バス","交通・道路","行政・制度","旅行・観光","インバウンド","統計"];
-  var state = { region:"national", filter:"all", data:null };
+  var state = { region:"national", filter:"all", data:null, unreadOnly:false };
+  var readMap = {};
+  try { readMap = JSON.parse(localStorage.getItem("readLinks")||"{}") || {}; } catch(e){ readMap = {}; }
+  function saveRead(){
+    // keep only the newest 2000 entries
+    var keys=Object.keys(readMap); if(keys.length>2000){ keys.sort(function(a,b){return readMap[a]-readMap[b];}).slice(0,keys.length-2000).forEach(function(k){ delete readMap[k]; }); }
+    try { localStorage.setItem("readLinks", JSON.stringify(readMap)); } catch(e){}
+  }
+  function isRead(n){ return !!readMap[n.link]; }
+  function markRead(url){ if(!url||readMap[url]) return; readMap[url]=Date.now(); saveRead(); render(); }
   try { var saved = localStorage.getItem("region"); if (saved==="kagoshima"||saved==="national") state.region = saved; } catch(e){}
 
   function $(id){ return document.getElementById(id); }
   function el(tag, cls, text){ var e=document.createElement(tag); if(cls) e.className=cls; if(text!=null) e.textContent=String(text); return e; }
-  function link(text, url){ if(!/^https?:\/\//.test(url||"")) return el("span",null,text); var a=el("a",null,text); a.href=url; a.target="_blank"; a.rel="noopener"; return a; }
+  function link(text, url){ if(!/^https?:\/\//.test(url||"")) return el("span",null,text); var a=el("a",null,text); a.href=url; a.target="_blank"; a.rel="noopener"; a.setAttribute("data-link",url); return a; }
   function tag(cat){ var t=el("span","tag",cat); t.style.background="var("+(CAT_COLOR[cat]||"--c-stat")+")"; return t; }
   // NEW = published within the last 24 hours, or picked up by the collector within the last 3 hours.
   var NEW_PUBLISHED_MS = 24*60*60*1000, NEW_SEEN_MS = 3*60*60*1000;
@@ -167,7 +183,13 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 
   function render(){
     var r=state.region, name = r==="national"?"全国":"鹿児島県";
-    document.querySelectorAll(".seg button").forEach(function(b){ b.setAttribute("aria-pressed", String(b.dataset.region===r)); });
+    document.querySelectorAll(".seg button").forEach(function(b){
+      b.setAttribute("aria-pressed", String(b.dataset.region===r));
+      var its = state.data && state.data.regions ? state.data.regions[b.dataset.region].items : [];
+      var u = its.filter(function(n){ return !isRead(n); }).length;
+      b.textContent = b.dataset.region==="national" ? "全国" : "鹿児島県";
+      if (u) { var s=el("span","unread-badge",u); s.setAttribute("aria-label","未読"+u+"件"); b.appendChild(s); }
+    });
     var d=state.data, reg = d && d.regions ? d.regions[r] : null;
     $("updated").textContent = "最終更新:" + (d ? fmtTime(d.updatedAt)+"("+ago(d.updatedAt)+")" : "—");
     var items = reg ? reg.items : [];
@@ -178,12 +200,16 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     cats.forEach(function(c){ var b=el("button",null,c==="all"?"すべて":c); b.type="button"; b.setAttribute("aria-pressed",String(c===state.filter));
       b.onclick=function(){ state.filter=c; render(); }; tabs.appendChild(b); });
 
-    var shown = items.filter(function(n){ return state.filter==="all" || n.cat===state.filter; });
+    var inCat = items.filter(function(n){ return state.filter==="all" || n.cat===state.filter; });
+    var unread = inCat.filter(function(n){ return !isRead(n); }).length;
+    var shown = state.unreadOnly ? inCat.filter(function(n){ return !isRead(n); }) : inCat;
+    $("unreadOnly").setAttribute("aria-pressed", String(state.unreadOnly));
+    $("markAll").hidden = !unread;
     var L = shown.filter(function(n){ return n.important; })[0] || shown[0];
     var lead=$("lead");
     if (L) {
-      lead.textContent="";
-      var m=el("div","meta"); m.appendChild(tag(L.cat)); if(isNew(L)) m.appendChild(el("span","new","NEW")); if(L.important) m.appendChild(el("span","chk","要チェック")); m.appendChild(el("span",null,name+"のトップニュース")); lead.appendChild(m);
+      lead.textContent=""; lead.classList.toggle("read", isRead(L));
+      var m=el("div","meta"); m.appendChild(tag(L.cat)); if(isNew(L)) m.appendChild(el("span","new","NEW")); if(L.important) m.appendChild(el("span","chk","要チェック")); if(isRead(L)) m.appendChild(el("span","read-mark","既読")); m.appendChild(el("span",null,name+"のトップニュース")); lead.appendChild(m);
       var h=el("h2"); h.appendChild(link(L.title,L.link)); lead.appendChild(h);
       var m2=el("div","meta"); m2.appendChild(el("span",null,"出典:"+L.source)); if(L.date) m2.appendChild(el("span",null,fmtDate(L.date))); lead.appendChild(m2);
       lead.hidden=false;
@@ -191,16 +217,16 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 
     $("listTitle").textContent = state.filter==="all" ? name+"の最新ニュース" : name+" ・ "+state.filter;
     var rest = shown.filter(function(n){ return n!==L; });
-    $("count").textContent = shown.length ? shown.length+"件・新しい順" : "";
+    $("count").textContent = inCat.length ? "未読"+unread+"件 / 全"+inCat.length+"件" : "";
     var list=$("list"); list.textContent="";
     if (!d) list.appendChild(el("p","empty","ニュースを読み込んでいます…"));
-    else if (!shown.length) list.appendChild(el("p","empty","このカテゴリの新着はまだありません。"));
+    else if (!shown.length) list.appendChild(el("p","empty", state.unreadOnly && inCat.length ? "未読のニュースはありません。すべて読みました。" : "このカテゴリの新着はまだありません。"));
     rest.forEach(function(n){
-      var a=el("article","item"); var m=el("div","meta"); m.appendChild(tag(n.cat));
+      var a=el("article","item"+(isRead(n)?" read":"")); var m=el("div","meta"); m.appendChild(tag(n.cat));
       if(isNew(n)) m.appendChild(el("span","new","NEW"));
       if(n.important) m.appendChild(el("span","chk","要チェック"));
       if(n.date) m.appendChild(el("span",null,fmtDate(n.date)));
-      m.appendChild(el("span",null,n.source)); a.appendChild(m);
+      m.appendChild(el("span",null,n.source)); if(isRead(n)) m.appendChild(el("span","read-mark","既読")); a.appendChild(m);
       var h=el("h3"); h.appendChild(link(n.title,n.link)); a.appendChild(h); list.appendChild(a);
     });
 
@@ -235,6 +261,16 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     var b=this; b.disabled=true; $("reloadIcon").classList.add("spin");
     await Promise.all([load(), new Promise(function(r){ setTimeout(r,500); })]);
     $("reloadIcon").classList.remove("spin"); b.disabled=false;
+  };
+  function onOpen(e){ var a=e.target.closest && e.target.closest("a[data-link]"); if(a) setTimeout(function(){ markRead(a.getAttribute("data-link")); }, 0); }
+  document.querySelector("main").addEventListener("click", onOpen);
+  document.querySelector("main").addEventListener("auxclick", onOpen);
+  $("unreadOnly").onclick=function(){ state.unreadOnly=!state.unreadOnly; render(); };
+  $("markAll").onclick=function(){
+    var d=state.data; if(!d) return;
+    d.regions[state.region].items.filter(function(n){ return state.filter==="all" || n.cat===state.filter; })
+      .forEach(function(n){ if(!readMap[n.link]) readMap[n.link]=Date.now(); });
+    saveRead(); render();
   };
   render(); load();
   setInterval(load, 5*60*1000);
