@@ -14,6 +14,13 @@ const SOURCES = [
   },
   { id: "travelvoice", name: "トラベルボイス", region: "national",
     url: "https://www.travelvoice.jp/feed", home: "https://www.travelvoice.jp/" },
+  { id: "kankokeizai", name: "観光経済新聞", region: "national",
+    url: "https://www.kankokeizai.com/feed/", home: "https://www.kankokeizai.com/" },
+  { id: "travelnews", name: "トラベルニュースat", region: "national",
+    url: "https://www.travelnews.co.jp/feed", home: "https://www.travelnews.co.jp/" },
+  { id: "trafficnews", name: "乗りものニュース", region: "national",
+    url: "https://trafficnews.jp/feed", home: "https://trafficnews.jp/",
+    filter: (t) => /バス|観光|旅行|ツアー|運賃|運転士|運転手|路線|ターミナル|新幹線|空港|フェリー|クルーズ|鹿児島|九州/.test(t) },
   { id: "qsr", name: "九州地方整備局 記者発表", region: "kagoshima",
     url: "https://www.qsr.mlit.go.jp/nt_list/nt1/rss.xml", home: "https://www.qsr.mlit.go.jp/",
     filter: (t) => /鹿児島|大隅|薩摩|霧島|国道3号|国道10号|国道220号|国道225号|国道226号|国道269号/.test(t) },
@@ -132,6 +139,10 @@ async function collectAll() {
     }
   });
 
+  // National headlines about Kagoshima also appear in the Kagoshima edition.
+  const KAGO_WORDS = /鹿児島|桜島|霧島|指宿|奄美|屋久島|種子島|薩摩|大隅|南九州/;
+  byRegion.kagoshima.push(...byRegion.national.filter((n) => KAGO_WORDS.test(n.title)));
+
   // Keep the previous items of a source that failed this time.
   let prev = null;
   try { prev = JSON.parse(await readFile(OUT, "utf8")); } catch {}
@@ -151,13 +162,15 @@ async function collectAll() {
       for (const n of r.items || []) firstSeen.set(n.link, n.firstSeen || "2000-01-01T00:00:00.000Z");
     }
   }
+  // A source collected for the first time does not flood the page with NEW badges.
+  const prevSourceIds = new Set(((prev && prev.sources) || []).filter((s) => s.ok).map((s) => s.id));
   const regions = {};
   for (const region of ["national", "kagoshima"]) {
     const seen = new Set();
     const items = byRegion[region]
       .filter((n) => (seen.has(n.link) ? false : (seen.add(n.link), true)))
       .sort(byDateDesc).slice(0, 50)
-      .map((n) => Object.assign({}, n, { firstSeen: firstSeen.get(n.link) || (prev ? nowIso : "2000-01-01T00:00:00.000Z") }));
+      .map((n) => Object.assign({}, n, { firstSeen: firstSeen.get(n.link) || (prevSourceIds.has(n.sourceId) ? nowIso : "2000-01-01T00:00:00.000Z") }));
     const alerts = region === "kagoshima"
       ? items.filter((n) => (n.alert || (n.cat === "交通・道路" && n.important)) &&
           (!n.date || now - new Date(n.date).getTime() < ALERT_WINDOW_MS)).slice(0, 6)
