@@ -71,15 +71,13 @@ aside{flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:22px}
 @keyframes spin{to{transform:rotate(360deg)}}
 @media (prefers-reduced-motion: reduce){.reload .spin{animation:none}}
 .chk{border:1px solid var(--alert);color:var(--alert);padding:1px 7px;font-size:12px;font-weight:700}
-.lead{background:var(--paper);border:1px solid var(--rule);padding:26px;display:flex;flex-direction:column;gap:12px}
-.lead h2{margin:0;font-family:var(--display);font-weight:800;font-size:clamp(22px,3.4vw,30px);line-height:1.45;text-wrap:balance}
 .meta{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted);align-items:center}
 .list-head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid var(--ink);padding-bottom:8px;gap:12px}
 .list-head h2{margin:0;font-family:var(--display);font-size:20px;font-weight:800}
 .item{padding:14px 0;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:6px}
 .item h3{margin:0;font-size:17px;font-weight:700;line-height:1.6;text-wrap:pretty}
-.item.read h3,.lead.read h2{color:var(--muted);font-weight:400}
-.item.read .meta,.lead.read .meta{opacity:.6}
+.item.read h3{color:var(--muted);font-weight:400}
+.item.read .meta{opacity:.6}
 .read-mark{font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--rule);padding:1px 6px}
 .col.swipe-l{animation:swipeL .22s ease-out}
 .col.swipe-r{animation:swipeR .22s ease-out}
@@ -131,7 +129,6 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 
 <main class="wrap">
   <div class="col">
-    <article class="lead" id="lead" hidden></article>
     <section>
       <div class="list-head"><h2 id="listTitle">全国の最新ニュース</h2><div class="list-tools"><span id="count" class="note"></span><button id="unreadOnly" class="mini" type="button" aria-pressed="false">未読のみ</button><button id="markAll" class="mini" type="button">すべて既読にする</button></div></div>
       <div id="list"><p class="empty">ニュースを読み込んでいます…</p></div>
@@ -211,18 +208,9 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     var shown = state.unreadOnly ? inCat.filter(function(n){ return !isRead(n); }) : inCat;
     $("unreadOnly").setAttribute("aria-pressed", String(state.unreadOnly));
     $("markAll").hidden = !unread;
-    var L = shown.filter(function(n){ return n.important; })[0] || shown[0];
-    var lead=$("lead");
-    if (L) {
-      lead.textContent=""; lead.classList.toggle("read", isRead(L));
-      var m=el("div","meta"); m.appendChild(tag(L.cat)); if(isNew(L)) m.appendChild(el("span","new","NEW")); if(L.important) m.appendChild(el("span","chk","要チェック")); if(isRead(L)) m.appendChild(el("span","read-mark","既読")); m.appendChild(el("span",null,name+"のトップニュース")); lead.appendChild(m);
-      var h=el("h2"); h.appendChild(link(L.title,L.link)); lead.appendChild(h);
-      var m2=el("div","meta"); m2.appendChild(el("span",null,"出典:"+L.source)); if(L.date) m2.appendChild(el("span",null,fmtDate(L.date))); lead.appendChild(m2);
-      lead.hidden=false;
-    } else lead.hidden=true;
 
     $("listTitle").textContent = state.filter==="all" ? name+"の最新ニュース" : name+" ・ "+state.filter;
-    var rest = shown.filter(function(n){ return n!==L; });
+    var rest = shown;
     $("count").textContent = inCat.length ? "未読"+unread+"件 / 全"+inCat.length+"件" : "";
     var list=$("list"); list.textContent="";
     if (!d) list.appendChild(el("p","empty","ニュースを読み込んでいます…"));
