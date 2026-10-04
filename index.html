@@ -256,7 +256,16 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     await Promise.all([load(), new Promise(function(r){ setTimeout(r,500); })]);
     $("reloadIcon").classList.remove("spin"); b.disabled=false;
   };
-  function onOpen(e){ var a=e.target.closest && e.target.closest("a[data-link]"); if(a) setTimeout(function(){ markRead(a.getAttribute("data-link")); }, 0); }
+  // Save the read mark immediately (the phone may pause this page as soon as the article opens),
+  // then redraw; redraw again whenever the page comes back into view.
+  function onOpen(e){
+    var a=e.target.closest && e.target.closest("a[data-link]"); if(!a) return;
+    var url=a.getAttribute("data-link"); if(!readMap[url]){ readMap[url]=Date.now(); saveRead(); }
+    var item=a.closest(".item"); if(item){ item.classList.add("read"); var nb=item.querySelector(".new"); if(nb) nb.remove(); }
+    setTimeout(render, 0);
+  }
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden) render(); });
+  window.addEventListener("pageshow", function(){ render(); });
   document.querySelector("main").addEventListener("click", onOpen);
   document.querySelector("main").addEventListener("auxclick", onOpen);
   $("unreadOnly").onclick=function(){ state.unreadOnly=!state.unreadOnly; render(); };
