@@ -217,7 +217,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     else if (!shown.length) list.appendChild(el("p","empty", state.unreadOnly && inCat.length ? "未読のニュースはありません。すべて読みました。" : "このカテゴリの新着はまだありません。"));
     rest.forEach(function(n){
       var a=el("article","item"+(isRead(n)?" read":"")); var m=el("div","meta"); m.appendChild(tag(n.cat));
-      if(isNew(n)) m.appendChild(el("span","new","NEW"));
+      if(isNew(n) && !isRead(n)) m.appendChild(el("span","new","NEW"));
       if(n.important) m.appendChild(el("span","chk","要チェック"));
       if(n.date) m.appendChild(el("span",null,fmtDate(n.date)));
       m.appendChild(el("span",null,n.source)); if(isRead(n)) m.appendChild(el("span","read-mark","既読")); a.appendChild(m);
