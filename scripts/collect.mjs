@@ -5,6 +5,9 @@ const OUT = new URL("../news.json", import.meta.url);
 const KAGO_TOPICS =
   /観光|旅行|交通|バス|道路|通行|国道|県道|空港|港|クルーズ|フェリー|鉄道|イベント|祭|インバウンド|宿泊|運休|誘客|ツアー|航路|便/;
 
+// A bus-related headline that reports an accident or incident.
+const BUS_ACCIDENT = /(?=.*バス)(?=.*(事故|衝突|追突|横転|接触|脱輪|転落|炎上|火災|けが|負傷|重傷|死亡|はね|ひかれ|飲酒|居眠り|急病|意識失|立ち往生))/;
+
 const SOURCES = [
   {
     id: "mlit", name: "国土交通省 報道発表", region: "national",
@@ -30,6 +33,12 @@ const SOURCES = [
   { id: "jnto", name: "日本政府観光局(JNTO)", region: "national",
     url: "https://www.jnto.go.jp/news/rss.xml", home: "https://www.jnto.go.jp/",
     filter: (t) => !/入札|公告|採用/.test(t) },
+  { id: "livedoor-dom", name: "ライブドアニュース 国内", region: "national",
+    url: "https://news.livedoor.com/topics/rss/dom.xml", home: "https://news.livedoor.com/",
+    filter: (t) => BUS_ACCIDENT.test(t) },
+  { id: "livedoor-top", name: "ライブドアニュース 主要", region: "national",
+    url: "https://news.livedoor.com/topics/rss/top.xml", home: "https://news.livedoor.com/",
+    filter: (t) => BUS_ACCIDENT.test(t) },
   { id: "qsr", name: "九州地方整備局 記者発表", region: "kagoshima",
     url: "https://www.qsr.mlit.go.jp/nt_list/nt1/rss.xml", home: "https://www.qsr.mlit.go.jp/",
     filter: (t) => /鹿児島|大隅|薩摩|霧島|国道3号|国道10号|国道220号|国道225号|国道226号|国道269号/.test(t) },
@@ -103,6 +112,7 @@ function decodeBody(buf, contentType) {
 }
 
 function categorize(t) {
+  if (BUS_ACCIDENT.test(t)) return "事故";
   if (/行政処分|法改正|省令|告示|公示|制度|予算|規制|監査|通達|条例|改正/.test(t)) return "行政・制度";
   if (/貸切|バス|運転者|乗務員|旅客自動車/.test(t)) return "貸切バス";
   if (/通行止|国道|県道|道路|鉄道|運休|運転再開|新幹線|JR|空港|航空|就航|フェリー|航路|渋滞|交通規制/.test(t)) return "交通・道路";
@@ -112,6 +122,7 @@ function categorize(t) {
 }
 
 function isImportant(t) {
+  if (BUS_ACCIDENT.test(t)) return true;
   return /行政処分|通行止|全面|運休|欠航|義務|改正|災害|警報|緊急/.test(t);
 }
 
@@ -189,7 +200,7 @@ async function collectAll() {
       .sort(byDateDesc).slice(0, 80)
       .map((n) => Object.assign({}, n, { firstSeen: firstSeen.get(n.link) || (prevSourceIds.has(n.sourceId) ? nowIso : "2000-01-01T00:00:00.000Z") }));
     const alerts = region === "kagoshima"
-      ? items.filter((n) => (n.alert || (n.cat === "交通・道路" && n.important)) &&
+      ? items.filter((n) => (n.alert || ((n.cat === "交通・道路" || n.cat === "事故") && n.important)) &&
           (!n.date || now - new Date(n.date).getTime() < ALERT_WINDOW_MS)).slice(0, 6)
       : [];
     regions[region] = { items, alerts };

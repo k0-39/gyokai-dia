@@ -20,7 +20,7 @@
 :root{
   --bg:#F3F4F1; --paper:#FFFFFF; --ink:#16191D; --muted:#4A4F57; --rule:#DCDDD8;
   --accent:#0E5A47; --accent-ink:#FFFFFF; --new:#F2B705; --new-ink:#16191D; --alert:#B4410C; --bar:#16191D; --bar-ink:#E9EAE6;
-  --c-bus:#0E5A47; --c-road:#7A5212; --c-gov:#B4410C; --c-travel:#5B3E8C; --c-inb:#1F4E8C; --c-stat:#4A4F57;
+  --c-acc:#C0262D; --c-bus:#0E5A47; --c-road:#7A5212; --c-gov:#B4410C; --c-travel:#5B3E8C; --c-inb:#1F4E8C; --c-stat:#4A4F57;
   --display:"Noto Serif JP","Hiragino Mincho ProN","Yu Mincho",serif;
   --body:"BIZ UDPGothic","Hiragino Sans","Yu Gothic",sans-serif;
   color-scheme:light;
@@ -28,7 +28,7 @@
 @media (prefers-color-scheme: dark){:root{
   --bg:#121417; --paper:#1B1E22; --ink:#ECEDEA; --muted:#A9ADB3; --rule:#2E3238;
   --accent:#4FB596; --accent-ink:#0B1F19; --alert:#F08A55; --bar:#0B0C0E; --bar-ink:#C9CBC6;
-  --c-bus:#1D7A62; --c-road:#8E6A22; --c-gov:#B4501C; --c-travel:#6E529E; --c-inb:#2F65AD; --c-stat:#5A606A;
+  --c-acc:#C63A40; --c-bus:#1D7A62; --c-road:#8E6A22; --c-gov:#B4501C; --c-travel:#6E529E; --c-inb:#2F65AD; --c-stat:#5A606A;
   color-scheme:dark}}
 *{box-sizing:border-box}
 html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -158,8 +158,8 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 
 <script>
 (function(){
-  var CAT_COLOR = {"貸切バス":"--c-bus","交通・道路":"--c-road","行政・制度":"--c-gov","旅行・観光":"--c-travel","インバウンド":"--c-inb","統計":"--c-stat"};
-  var CAT_ORDER = ["貸切バス","交通・道路","行政・制度","旅行・観光","インバウンド","統計"];
+  var CAT_COLOR = {"事故":"--c-acc","貸切バス":"--c-bus","交通・道路":"--c-road","行政・制度":"--c-gov","旅行・観光":"--c-travel","インバウンド":"--c-inb","統計":"--c-stat"};
+  var CAT_ORDER = ["事故","貸切バス","交通・道路","行政・制度","旅行・観光","インバウンド","統計"];
   var state = { region:"national", filter:"all", data:null, unreadOnly:false };
   var readMap = {};
   try { readMap = JSON.parse(localStorage.getItem("readLinks")||"{}") || {}; } catch(e){ readMap = {}; }
