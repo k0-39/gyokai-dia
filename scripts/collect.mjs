@@ -3,7 +3,7 @@ import { readFile, writeFile } from "node:fs/promises";
 const OUT = new URL("../news.json", import.meta.url);
 
 const KAGO_TOPICS =
-  /観光|旅行|交通|バス|道路|通行|国道|県道|空港|港|クルーズ|フェリー|鉄道|イベント|祭|インバウンド|宿泊|運休|誘客|ツアー|航路|便/;
+  /観光|旅行|交通|バス|道路|通行|国道|県道|空港|港|クルーズ|フェリー|鉄道|イベント|祭|まつり|フェス|花火|マラソン|大会|体験|物産|特産|温泉|インバウンド|宿泊|運休|誘客|ツアー|航路|便|工事|規制|台風|噴火|降灰|桜島|大雨|修学旅行|ジオパーク|世界遺産/;
 
 // A bus-related headline that reports an accident or incident.
 const BUS_ACCIDENT = /(?=.*バス)(?=.*(事故|衝突|追突|横転|接触|脱輪|転落|炎上|火災|けが|負傷|重傷|死亡|はね|ひかれ|飲酒|居眠り|急病|意識失|立ち往生))/;
@@ -55,6 +55,33 @@ const SOURCES = [
     url: "https://www.city.kagoshima.lg.jp/chumoku/kanko_chumoku.xml", home: "https://www.city.kagoshima.lg.jp/" },
   { id: "kirishima", name: "霧島市 新着情報", region: "kagoshima",
     url: "https://www.city-kirishima.jp/shinchaku.xml", home: "https://www.city-kirishima.jp/",
+    filter: (t) => KAGO_TOPICS.test(t) },
+  { id: "kanoya", name: "鹿屋市 お知らせ", region: "kagoshima",
+    url: "https://www.city.kanoya.lg.jp/oshirase.xml", home: "https://www.city.kanoya.lg.jp/",
+    filter: (t) => KAGO_TOPICS.test(t) },
+  { id: "satsumasendai", name: "薩摩川内市 新着情報", region: "kagoshima",
+    url: "https://www.city.satsumasendai.lg.jp/cgi-bin/feed.php?displayCount=30&displayRange=90&siteNew=1", home: "https://www.city.satsumasendai.lg.jp/",
+    filter: (t) => KAGO_TOPICS.test(t) },
+  { id: "amami", name: "奄美市 新着情報", region: "kagoshima",
+    url: "https://www.city.amami.lg.jp/shinchaku/shinchaku.xml", home: "https://www.city.amami.lg.jp/",
+    filter: (t) => KAGO_TOPICS.test(t) },
+  { id: "amami-topics", name: "奄美市 注目情報", region: "kagoshima",
+    url: "https://www.city.amami.lg.jp/topics/topics.xml", home: "https://www.city.amami.lg.jp/",
+    filter: (t) => KAGO_TOPICS.test(t) },
+  { id: "hioki", name: "日置市 新着情報", region: "kagoshima",
+    url: "https://www.city.hioki.kagoshima.jp/kouho/home/shinchaku.xml", home: "https://www.city.hioki.kagoshima.jp/",
+    filter: (t) => KAGO_TOPICS.test(t) },
+  { id: "hioki-pick", name: "日置市 注目情報", region: "kagoshima",
+    url: "https://www.city.hioki.kagoshima.jp/kouho/home/chumoku.xml", home: "https://www.city.hioki.kagoshima.jp/",
+    filter: (t) => KAGO_TOPICS.test(t) },
+  { id: "makurazaki", name: "枕崎市 新着情報", region: "kagoshima",
+    url: "https://www.city.makurazaki.lg.jp/rss/10/list1.xml", home: "https://www.city.makurazaki.lg.jp/",
+    filter: (t) => KAGO_TOPICS.test(t) },
+  { id: "tarumizu", name: "垂水市 新着情報", region: "kagoshima",
+    url: "https://www.city.tarumizu.lg.jp/shinchaku/shinchaku.xml", home: "https://www.city.tarumizu.lg.jp/",
+    filter: (t) => KAGO_TOPICS.test(t) },
+  { id: "soo", name: "曽於市 新着情報", region: "kagoshima",
+    url: "https://www.city.soo.kagoshima.jp/rss/feed.rss", home: "https://www.city.soo.kagoshima.jp/",
     filter: (t) => KAGO_TOPICS.test(t) },
   { id: "city", name: "鹿児島市 新着情報", region: "kagoshima",
     url: "https://www.city.kagoshima.lg.jp/shinchaku/shinchaku.xml", home: "https://www.city.kagoshima.lg.jp/",
