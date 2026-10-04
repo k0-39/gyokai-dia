@@ -21,6 +21,18 @@ const SOURCES = [
   { id: "trafficnews", name: "乗りものニュース", region: "national",
     url: "https://trafficnews.jp/feed", home: "https://trafficnews.jp/",
     filter: (t) => /バス|観光|旅行|ツアー|運賃|運転士|運転手|路線|ターミナル|新幹線|空港|フェリー|クルーズ|鹿児島|九州/.test(t) },
+  { id: "prtimes", name: "PR TIMES", region: "national",
+    url: "https://prtimes.jp/index.rdf", home: "https://prtimes.jp/",
+    filter: (t) => /貸切バス|観光バス|高速バス|路線バス|バスツアー|バス会社|バス事業|旅行会社|旅行業|ツアー|観光|インバウンド|訪日|修学旅行|鹿児島/.test(t) },
+  { id: "bestcar", name: "ベストカーWeb", region: "national",
+    url: "https://bestcarweb.jp/feed", home: "https://bestcarweb.jp/",
+    filter: (t) => /バス|観光|運転士|運転手|旅客/.test(t) },
+  { id: "response", name: "レスポンス", region: "national",
+    url: "https://response.jp/rss/index.rdf", home: "https://response.jp/",
+    filter: (t) => /バス|観光|旅行|運転士|運転手|旅客|運賃|鹿児島/.test(t) },
+  { id: "jnto", name: "日本政府観光局(JNTO)", region: "national",
+    url: "https://www.jnto.go.jp/news/rss.xml", home: "https://www.jnto.go.jp/",
+    filter: (t) => !/入札|公告|採用/.test(t) },
   { id: "qsr", name: "九州地方整備局 記者発表", region: "kagoshima",
     url: "https://www.qsr.mlit.go.jp/nt_list/nt1/rss.xml", home: "https://www.qsr.mlit.go.jp/",
     filter: (t) => /鹿児島|大隅|薩摩|霧島|国道3号|国道10号|国道220号|国道225号|国道226号|国道269号/.test(t) },
@@ -33,6 +45,11 @@ const SOURCES = [
     url: "https://www.city.kagoshima.lg.jp/kinkyu/kinkyu_saigai.xml", home: "https://www.city.kagoshima.lg.jp/", alert: true },
   { id: "city-kanko", name: "鹿児島市 観光新着", region: "kagoshima",
     url: "https://www.city.kagoshima.lg.jp/shinchaku/kanko_shinchaku.xml", home: "https://www.city.kagoshima.lg.jp/" },
+  { id: "city-kanko-pick", name: "鹿児島市 観光注目", region: "kagoshima",
+    url: "https://www.city.kagoshima.lg.jp/chumoku/kanko_chumoku.xml", home: "https://www.city.kagoshima.lg.jp/" },
+  { id: "kirishima", name: "霧島市 新着情報", region: "kagoshima",
+    url: "https://www.city-kirishima.jp/shinchaku.xml", home: "https://www.city-kirishima.jp/",
+    filter: (t) => KAGO_TOPICS.test(t) },
   { id: "city", name: "鹿児島市 新着情報", region: "kagoshima",
     url: "https://www.city.kagoshima.lg.jp/shinchaku/shinchaku.xml", home: "https://www.city.kagoshima.lg.jp/",
     filter: (t) => KAGO_TOPICS.test(t) },
@@ -111,13 +128,16 @@ async function fetchSource(src) {
     });
     if (!res.ok) throw new Error("HTTP " + res.status);
     const xml = decodeBody(await res.arrayBuffer(), res.headers.get("content-type"));
-    return parseFeed(xml, src.url)
+    const all = parseFeed(xml, src.url);
+    const items = all
       .filter((e) => !src.filter || src.filter(e.title, e.link))
       .slice(0, 30)
       .map((e) => ({
         title: e.title, link: e.link, date: e.date, source: src.name, sourceId: src.id,
         cat: categorize(e.title), important: src.alert ? true : isImportant(e.title), alert: !!src.alert,
       }));
+    items.raw = all.length; // headlines in the feed before filtering (for diagnosis)
+    return items;
   } finally { clearTimeout(timer); }
 }
 
@@ -132,7 +152,7 @@ async function collectAll() {
     const s = SOURCES[i];
     if (r.status === "fulfilled") {
       byRegion[s.region].push(...r.value);
-      sources.push({ id: s.id, name: s.name, home: s.home, region: s.region, ok: true, count: r.value.length });
+      sources.push({ id: s.id, name: s.name, home: s.home, region: s.region, ok: true, count: r.value.length, raw: r.value.raw });
     } else {
       sources.push({ id: s.id, name: s.name, home: s.home, region: s.region, ok: false, count: 0,
         error: String((r.reason && r.reason.message) || r.reason).slice(0, 120) });
@@ -169,7 +189,7 @@ async function collectAll() {
     const seen = new Set();
     const items = byRegion[region]
       .filter((n) => (seen.has(n.link) ? false : (seen.add(n.link), true)))
-      .sort(byDateDesc).slice(0, 50)
+      .sort(byDateDesc).slice(0, 80)
       .map((n) => Object.assign({}, n, { firstSeen: firstSeen.get(n.link) || (prevSourceIds.has(n.sourceId) ? nowIso : "2000-01-01T00:00:00.000Z") }));
     const alerts = region === "kagoshima"
       ? items.filter((n) => (n.alert || (n.cat === "交通・道路" && n.important)) &&
