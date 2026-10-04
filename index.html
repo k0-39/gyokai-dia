@@ -155,6 +155,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 
 <script>
 (function(){
+  var APP_VERSION = "2026-10-04-1225";
   var CAT_COLOR = {"事故":"--c-acc","貸切バス":"--c-bus","交通・道路":"--c-road","行政・制度":"--c-gov","旅行・観光":"--c-travel","インバウンド":"--c-inb","統計":"--c-stat"};
   var CAT_ORDER = ["事故","貸切バス","交通・道路","行政・制度","旅行・観光","インバウンド","統計"];
   var state = { region:"national", filter:"all", data:null, unreadOnly:false };
@@ -239,7 +240,20 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 
   function showStatus(t,err){ var s=$("status"); s.textContent=t; s.classList.toggle("err",!!err); }
 
+  // If a newer version of this page has been published, reload once to pick it up
+  // (phones keep an open page — especially one started from the home screen — for a long time).
+  async function checkVersion(){
+    try {
+      var r = await fetch("index.html?v="+Date.now(), {cache:"no-store"}); if(!r.ok) return;
+      var m = (await r.text()).match(/APP_VERSION = "([^"]+)"/);
+      if (m && m[1] !== APP_VERSION) {
+        var key="reloadedFor"; var done=null; try{ done=sessionStorage.getItem(key); }catch(e){}
+        if (done !== m[1]) { try{ sessionStorage.setItem(key, m[1]); }catch(e){} location.reload(); }
+      }
+    } catch(e){}
+  }
   async function load(){
+    checkVersion();
     var res;
     try {
       res = await fetch("news.json?t="+Date.now(),{cache:"no-store"});
@@ -264,7 +278,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     var item=a.closest(".item"); if(item){ item.classList.add("read"); var nb=item.querySelector(".new"); if(nb) nb.remove(); }
     setTimeout(render, 0);
   }
-  document.addEventListener("visibilitychange", function(){ if(!document.hidden) render(); });
+  document.addEventListener("visibilitychange", function(){ if(!document.hidden) { render(); checkVersion(); } });
   window.addEventListener("pageshow", function(){ render(); });
   document.querySelector("main").addEventListener("click", onOpen);
   document.querySelector("main").addEventListener("auxclick", onOpen);
