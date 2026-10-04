@@ -20,7 +20,7 @@ const SOURCES = [
     url: "https://www.travelnews.co.jp/feed", home: "https://www.travelnews.co.jp/" },
   { id: "prtimes", name: "PR TIMES", region: "national",
     url: "https://prtimes.jp/index.rdf", home: "https://prtimes.jp/",
-    filter: (t) => /バス|旅行|ツアー|観光|インバウンド|訪日|修学旅行|ホテル|旅館|宿泊|温泉|空港|航空|鉄道|新幹線|クルーズ|フェリー|鹿児島|九州/.test(t) },
+    filter: (t) => /バス|旅行|ツアー|観光|インバウンド|訪日|修学旅行|ホテル|旅館|宿泊|温泉|空港|航空|鉄道|新幹線|クルーズ|フェリー|鹿児島/.test(t) },
   { id: "bestcar", name: "ベストカーWeb", region: "national",
     url: "https://bestcarweb.jp/feed", home: "https://bestcarweb.jp/",
     filter: (t) => /バス|観光|運転士|運転手|旅客/.test(t) },
