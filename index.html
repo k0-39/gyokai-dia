@@ -53,6 +53,14 @@ header.mast .wrap{display:flex;flex-direction:column;gap:18px;padding-block:24px
 .seg{display:flex;border:2px solid var(--ink);align-self:flex-start}
 .seg button{min-height:46px;min-width:130px;padding:0 20px;border:0;background:var(--paper);color:var(--ink);font:700 16px var(--body);cursor:pointer}
 .seg button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+.search{position:relative;display:flex;align-items:center;max-width:520px;width:100%}
+.search svg{position:absolute;left:12px;width:18px;height:18px;color:var(--muted);pointer-events:none}
+.search input{width:100%;min-height:44px;padding:0 44px 0 40px;border:1px solid var(--rule);border-radius:999px;background:var(--bg);color:var(--ink);font:16px var(--body)}
+.search input:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 25%,transparent)}
+.search input::-webkit-search-cancel-button{display:none}
+.search .clear{position:absolute;right:6px;width:34px;height:34px;border:0;border-radius:50%;background:transparent;color:var(--muted);font-size:20px;line-height:1;cursor:pointer}
+mark{background:var(--new);color:var(--new-ink);padding:0 1px;border-radius:2px}
+.hint-btn{border:0;background:none;color:var(--accent);font:700 14px var(--body);text-decoration:underline;cursor:pointer;padding:4px 0}
 nav.tabs{display:flex;flex-wrap:wrap;gap:2px}
 nav.tabs button{min-height:44px;padding:0 14px;border:0;border-bottom:4px solid transparent;background:transparent;color:var(--muted);font:700 15px var(--body);cursor:pointer}
 nav.tabs button[aria-pressed="true"]{color:var(--accent);border-bottom-color:var(--accent)}
@@ -124,6 +132,11 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     <button type="button" data-region="national" aria-pressed="true">全国</button>
     <button type="button" data-region="kagoshima" aria-pressed="false">鹿児島県</button>
   </div>
+  <form class="search" role="search" onsubmit="return false">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input id="q" type="search" inputmode="search" enterkeyhint="search" placeholder="ニュースを検索(例:指宿 運転士 インバウンド)" aria-label="ニュースを検索" autocomplete="off">
+    <button id="qClear" class="clear" type="button" aria-label="検索をクリア" hidden>×</button>
+  </form>
   <nav class="tabs" id="tabs" aria-label="カテゴリ"></nav>
 </div></header>
 
@@ -155,10 +168,24 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 
 <script>
 (function(){
-  var APP_VERSION = "2026-10-04-1225";
+  var APP_VERSION = "2026-10-04-1910";
   var CAT_COLOR = {"事故":"--c-acc","貸切バス":"--c-bus","交通・道路":"--c-road","行政・制度":"--c-gov","旅行・観光":"--c-travel","インバウンド":"--c-inb","統計":"--c-stat"};
   var CAT_ORDER = ["事故","貸切バス","交通・道路","行政・制度","旅行・観光","インバウンド","統計"];
-  var state = { region:"national", filter:"all", data:null, unreadOnly:false };
+  var state = { region:"national", filter:"all", data:null, unreadOnly:false, q:"" };
+  function terms(){ return state.q.trim().toLowerCase().split(/[\s\u3000]+/).filter(Boolean); }
+  function matches(n, ts){ if(!ts.length) return true; var s=n.title.toLowerCase(); return ts.every(function(t){ return s.indexOf(t)>=0; }); }
+  function highlight(text, ts){
+    var frag=document.createDocumentFragment(); if(!ts.length){ frag.appendChild(document.createTextNode(text)); return frag; }
+    var low=text.toLowerCase(), i=0;
+    while(i<text.length){
+      var best=-1, len=0;
+      ts.forEach(function(t){ var p=low.indexOf(t,i); if(p>=0 && (best<0||p<best)){ best=p; len=t.length; } });
+      if(best<0){ frag.appendChild(document.createTextNode(text.slice(i))); break; }
+      if(best>i) frag.appendChild(document.createTextNode(text.slice(i,best)));
+      var m=document.createElement("mark"); m.textContent=text.slice(best,best+len); frag.appendChild(m); i=best+len;
+    }
+    return frag;
+  }
   var readMap = {};
   try { readMap = JSON.parse(localStorage.getItem("readLinks")||"{}") || {}; } catch(e){ readMap = {}; }
   function saveRead(){
@@ -204,17 +231,27 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
     cats.forEach(function(c){ var b=el("button",null,c==="all"?"すべて":c); b.type="button"; b.setAttribute("aria-pressed",String(c===state.filter));
       b.onclick=function(){ state.filter=c; render(); }; tabs.appendChild(b); });
 
-    var inCat = items.filter(function(n){ return state.filter==="all" || n.cat===state.filter; });
+    var ts = terms();
+    var inCat = items.filter(function(n){ return (state.filter==="all" || n.cat===state.filter) && matches(n, ts); });
     var unread = inCat.filter(function(n){ return !isRead(n); }).length;
     var shown = state.unreadOnly ? inCat.filter(function(n){ return !isRead(n); }) : inCat;
     $("unreadOnly").setAttribute("aria-pressed", String(state.unreadOnly));
     $("markAll").hidden = !unread;
 
-    $("listTitle").textContent = state.filter==="all" ? name+"の最新ニュース" : name+" ・ "+state.filter;
+    $("listTitle").textContent = ts.length ? "「"+state.q.trim()+"」の検索結果("+name+")" : (state.filter==="all" ? name+"の最新ニュース" : name+" ・ "+state.filter);
+    $("qClear").hidden = !state.q;
     var rest = shown;
     $("count").textContent = inCat.length ? "未読"+unread+"件 / 全"+inCat.length+"件" : "";
     var list=$("list"); list.textContent="";
     if (!d) list.appendChild(el("p","empty","ニュースを読み込んでいます…"));
+    else if (!shown.length && ts.length) {
+      var box=el("div","empty"); box.appendChild(el("p",null,"「"+state.q.trim()+"」に一致するニュースは"+name+(state.filter==="all"?"":"の「"+state.filter+"」")+"にありません。"));
+      var other = r==="national"?"kagoshima":"national", oname = other==="national"?"全国":"鹿児島県";
+      var oc = d.regions[other].items.filter(function(n){ return matches(n, ts); }).length;
+      if (oc) { var b=el("button","hint-btn",oname+"で"+oc+"件見つかりました。表示する"); b.type="button"; b.onclick=function(){ state.region=other; state.filter="all"; render(); }; box.appendChild(b); }
+      else if (state.filter!=="all") { var b2=el("button","hint-btn","すべてのカテゴリで探す"); b2.type="button"; b2.onclick=function(){ state.filter="all"; render(); }; box.appendChild(b2); }
+      list.appendChild(box);
+    }
     else if (!shown.length) list.appendChild(el("p","empty", state.unreadOnly && inCat.length ? "未読のニュースはありません。すべて読みました。" : "このカテゴリの新着はまだありません。"));
     rest.forEach(function(n){
       var a=el("article","item"+(isRead(n)?" read":"")); var m=el("div","meta"); m.appendChild(tag(n.cat));
@@ -222,7 +259,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
       if(n.important) m.appendChild(el("span","chk","要チェック"));
       if(n.date) m.appendChild(el("span",null,fmtDate(n.date)));
       m.appendChild(el("span",null,n.source)); if(isRead(n)) m.appendChild(el("span","read-mark","既読")); a.appendChild(m);
-      var h=el("h3"); h.appendChild(link(n.title,n.link)); a.appendChild(h); list.appendChild(a);
+      var h=el("h3"), lk=link("",n.link); lk.textContent=""; lk.appendChild(highlight(n.title, ts)); h.appendChild(lk); a.appendChild(h); list.appendChild(a);
     });
 
     var al = reg ? reg.alerts : [];
@@ -309,6 +346,10 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
       if (top<0) window.scrollBy({top:top-8});
     }, {passive:true});
   })();
+  var qTimer=null;
+  $("q").addEventListener("input", function(){ var v=this.value; clearTimeout(qTimer); qTimer=setTimeout(function(){ state.q=v; render(); }, 150); });
+  $("q").addEventListener("keydown", function(e){ if(e.key==="Enter"){ this.blur(); } if(e.key==="Escape"){ this.value=""; state.q=""; render(); } });
+  $("qClear").onclick=function(){ $("q").value=""; state.q=""; render(); $("q").focus(); };
   render(); load();
   setInterval(load, 5*60*1000);
 })();
