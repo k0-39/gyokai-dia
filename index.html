@@ -3,18 +3,18 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>BUSTA バスタ</title>
+<title>ネタトルくん</title>
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#0E5A47">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="BUSTA">
-<meta name="description" content="BUSTA(バスタ)— 貸切バス・旅行業界のニュースを全国と鹿児島県に分けてひとまとめに。15分ごとに自動更新。">
+<meta name="apple-mobile-web-app-title" content="ネタトルくん">
+<meta name="description" content="ネタトルくん — 貸切バス・旅行業界のニュースを全国と鹿児島県に分けてひとまとめに。15分ごとに自動更新。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@112,800&family=BIZ+UDPGothic:wght@400;700&family=Noto+Serif+JP:wght@600;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@900&family=BIZ+UDPGothic:wght@400;700&family=Noto+Serif+JP:wght@600;800&display=swap">
 <style>
 /* Layout: newspaper masthead + region switch, main column of headlines, side rail of operational info */
 :root{
@@ -44,10 +44,10 @@ header.mast{background:var(--paper);border-bottom:3px solid var(--accent)}
 header.mast .wrap{display:flex;flex-direction:column;gap:18px;padding-block:24px 0}
 .mast-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
 .eyebrow{font-size:13px;letter-spacing:.1em;color:var(--accent);font-weight:700}
-.logo{margin:0;display:flex;align-items:baseline;gap:12px;line-height:1}
-.logo .en{font-family:"Archivo","Arial Black",sans-serif;font-weight:800;font-stretch:112%;font-size:clamp(40px,7vw,56px);letter-spacing:.02em;color:var(--ink)}
+.logo{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;line-height:1.1}
+.logo .en{font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","BIZ UDPGothic",sans-serif;font-weight:900;font-size:clamp(36px,7vw,52px);letter-spacing:.02em;color:var(--ink);white-space:nowrap}
 .logo .en i{font-style:normal;color:var(--accent)}
-.logo .ja{font-family:var(--body);font-weight:700;font-size:14px;letter-spacing:.3em;color:var(--muted)}
+.logo .ja{font-family:var(--body);font-weight:700;font-size:12px;letter-spacing:.2em;color:var(--muted);white-space:nowrap}
 .status{font-size:13px;color:var(--muted);text-align:right;max-width:360px}
 .status.err{color:var(--alert)}
 .seg{display:flex;border:2px solid var(--ink);align-self:flex-start}
@@ -121,7 +121,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
   <div class="mast-row">
     <div style="display:flex;flex-direction:column;gap:4px">
       <span class="eyebrow">貸切バス・旅行業界のニュースをひとまとめに</span>
-      <h1 class="logo"><span class="en">BUS<i>TA</i></span><span class="ja">バスタ</span></h1>
+      <h1 class="logo"><span class="en"><i>ネタ</i>トルくん</span><span class="ja">NETATORU-KUN</span></h1>
     </div>
     <div class="reload-wrap">
       <button id="reloadBtn" class="reload" type="button"><svg id="reloadIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>最新に更新</span></button>
@@ -162,13 +162,13 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 </main>
 
 <footer><div class="wrap">
-  <span>BUSTA(バスタ)― 貸切バス・旅行業界ニュース</span>
+  <span>ネタトルくん ― 貸切バス・旅行業界ニュース</span>
   <span>見出しの著作権は各配信元に帰属します</span>
 </div></footer>
 
 <script>
 (function(){
-  var APP_VERSION = "2026-10-04-1910";
+  var APP_VERSION = "2026-10-07-0010";
   var CAT_COLOR = {"事故":"--c-acc","貸切バス":"--c-bus","交通・道路":"--c-road","行政・制度":"--c-gov","旅行・観光":"--c-travel","インバウンド":"--c-inb","統計":"--c-stat"};
   var CAT_ORDER = ["事故","貸切バス","交通・道路","行政・制度","旅行・観光","インバウンド","統計"];
   var state = { region:"national", filter:"all", data:null, unreadOnly:false, q:"" };

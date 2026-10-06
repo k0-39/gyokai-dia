@@ -1,6 +1,6 @@
 {
-  "name": "BUSTA バスタ",
-  "short_name": "BUSTA",
+  "name": "ネタトルくん",
+  "short_name": "ネタトルくん",
   "description": "貸切バス・旅行業界のニュースを全国と鹿児島県に分けてひとまとめに",
   "start_url": "./",
   "scope": "./",
