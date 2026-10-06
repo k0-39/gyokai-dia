@@ -44,6 +44,8 @@ header.mast{background:var(--paper);border-bottom:3px solid var(--accent)}
 header.mast .wrap{display:flex;flex-direction:column;gap:18px;padding-block:24px 0}
 .mast-row{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px}
 .eyebrow{font-size:13px;letter-spacing:.1em;color:var(--accent);font-weight:700}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{width:clamp(56px,11vw,72px);height:auto;flex:none}
 .logo{margin:0;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;line-height:1.1}
 .logo .en{font-family:"Zen Maru Gothic","Hiragino Maru Gothic ProN","BIZ UDPGothic",sans-serif;font-weight:900;font-size:clamp(36px,7vw,52px);letter-spacing:.02em;color:var(--ink);white-space:nowrap}
 .logo .en i{font-style:normal;color:var(--accent)}
@@ -121,7 +123,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
   <div class="mast-row">
     <div style="display:flex;flex-direction:column;gap:4px">
       <span class="eyebrow">貸切バス・旅行業界のニュースをひとまとめに</span>
-      <h1 class="logo"><span class="en"><i>ネタ</i>トルくん</span><span class="ja">NETATORU-KUN</span></h1>
+      <div class="brand"><img src="icons/logo-mark.png" alt="" width="72" height="72"><h1 class="logo"><span class="en"><i>ネタ</i>トルくん</span><span class="ja">NETATORU-KUN</span></h1></div>
     </div>
     <div class="reload-wrap">
       <button id="reloadBtn" class="reload" type="button"><svg id="reloadIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg><span>最新に更新</span></button>
@@ -168,7 +170,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px;
 
 <script>
 (function(){
-  var APP_VERSION = "2026-10-07-0010";
+  var APP_VERSION = "2026-10-07-0015";
   var CAT_COLOR = {"事故":"--c-acc","貸切バス":"--c-bus","交通・道路":"--c-road","行政・制度":"--c-gov","旅行・観光":"--c-travel","インバウンド":"--c-inb","統計":"--c-stat"};
   var CAT_ORDER = ["事故","貸切バス","交通・道路","行政・制度","旅行・観光","インバウンド","統計"];
   var state = { region:"national", filter:"all", data:null, unreadOnly:false, q:"" };
