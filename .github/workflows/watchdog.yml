@@ -1,0 +1,30 @@
+name: 自動取得の見張り
+
+# 15分ごとの自動取得(loop.yml)が途切れていたら、もう一度動かします。
+# GitHub 側の一時的な不具合で予約が切れても、ここで自動的に復旧します。
+
+on:
+  schedule:
+    - cron: "8,38 * * * *"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: 自動取得が動いているか確認し、止まっていれば再開
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          active=$(gh run list --repo "$REPO" --workflow loop.yml --limit 10 --json status \
+            --jq '[.[] | select(.status=="queued" or .status=="in_progress" or .status=="waiting" or .status=="pending" or .status=="requested")] | length')
+          echo "動作中または待機中の自動取得: ${active} 件"
+          if [ "$active" = "0" ]; then
+            echo "自動取得が止まっていたので再開します"
+            gh workflow run loop.yml --ref main --repo "$REPO"
+          fi
